@@ -32,7 +32,7 @@ public class ELAUtils {
         String result = HttpKit.get(nodeURL + "/api/v1/asset/utxos/" + address);
         ResultUTXO resultUTXO = JsonUtil.jsonStr2Entity(result, ResultUTXO.class);
         if(resultUTXO.getError() != 0) {
-            log.error("\n获取地址 [{}] UTXO失败 [{}]", address, resultUTXO.getDesc());
+            log.error("获取地址 [{}] UTXO失败 [{}]", address, resultUTXO.getDesc());
             throw new Exception("获取UTXO失败");
         }
         return resultUTXO.getResult().get(0).getUtxo();
@@ -40,8 +40,7 @@ public class ELAUtils {
 
     public static String generateTransaction(List<Map<String, String>> utxos, Map<String, Long> receivers, String privateKey, String address) throws Exception {
 
-        long totalSpend = 0;
-        long utxoValue = 0;
+        long totalSpend = 0, utxoValue = 0;
 
         List<Map<String, Object>> utxoOutputs = new ArrayList<>();
         for(Map.Entry<String, Long> entry : receivers.entrySet()) {
@@ -57,7 +56,7 @@ public class ELAUtils {
         for(Map<String, String> entry : utxos) {
             Map<String,Object> utxoInputDetail = new HashMap<>();
             utxoInputDetail.put("txid",  entry.get("Txid"));
-            utxoInputDetail.put("index",  entry.get("Index"));
+            utxoInputDetail.put("index",  Long.parseLong(entry.get("Index")));
             utxoInputDetail.put("privateKey",  privateKey);
             utxoInputDetail.put("address",  address);
             utxoInputs.add(utxoInputDetail);
@@ -69,7 +68,7 @@ public class ELAUtils {
         }
 
         if(utxoValue < totalSpend  + fee) {
-            log.error("\n分红账户余额不足");
+            log.error("分红账户余额不足");
             throw new Exception("分红账户余额不足");
         }
 
@@ -103,9 +102,9 @@ public class ELAUtils {
         String responseStr = HttpKit.post(nodeURL + "/api/v1/sendtransaction",JSON.toJSONString(rawTxEntity));
         ReturnMsgEntity.ELAReturnMsg elaReturnMsg = JsonUtil.jsonStr2Entity(responseStr,ReturnMsgEntity.ELAReturnMsg.class);
         if(elaReturnMsg.getError() != 0) {
-            log.error("\nError to send transaction [{}]", rawTxEntity);
+            log.error("Error to send transaction [{}]", rawTxEntity);
             throw new Exception("发送交易失败");
         }
-        log.info("\nSendRawTransaction Result: {}", elaReturnMsg);
+        log.info("SendRawTransaction Result: {}", elaReturnMsg);
     }
 }

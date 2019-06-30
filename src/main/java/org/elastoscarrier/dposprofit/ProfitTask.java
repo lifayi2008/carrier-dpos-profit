@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,12 +46,16 @@ public class ProfitTask {
     @Value("${profit.account.privateKey}")
     private String profitAccountPrivateKey;
 
+    @Value("${profit.totalVoterPorfitPerCircle}")
+    private String totalVoterPorfitPerCircle;
 
-    @Scheduled(cron = "0 0/5 * * * *")
+
+    @Scheduled(cron = "0 0/2 * * * *")
     public void profit() {
 
-        long currentPrefitBlock = 0;
+        long currentProfitBlock = 0;
         long nextEndProfitBlock = nextProfitBlock + 20 * 36;
+        long startProfitBlock = nextProfitBlock;
 
         Map<String, Long> profitDetail = new HashMap<>(1000);
 
@@ -68,61 +73,69 @@ public class ProfitTask {
 
             for(History history : resultHistory.getResult().getHistory()) {
 
-                currentPrefitBlock = history.getHeight();
+                currentProfitBlock = history.getHeight();
 
                 //如果还没到要分红处理的块 或者 当前块不是CoinBase交易则跳过
-                if(currentPrefitBlock < nextProfitBlock || !history.getTxType().equals("CoinBase")) {
+                if(currentProfitBlock < nextProfitBlock || !history.getTxType().equals("CoinBase")) {
                     continue;
                 }
 
-                if(currentPrefitBlock >= nextEndProfitBlock) {
-                    nextProfitBlock = currentPrefitBlock;
+                if(currentProfitBlock >= nextEndProfitBlock) {
+                    nextProfitBlock = currentProfitBlock;
                     break end;
                 }
 
-                log.info("\n当前处理的块为 [{}]", currentPrefitBlock);
+                log.info("当前处理的块为 [{}]", currentProfitBlock);
 
                 //DO profit
-                doProfit(currentPrefitBlock, history.getValue(), profitDetail);
+                try {
+                    doProfit(currentProfitBlock, profitDetail);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return;
+                }
             }
             nextQueryPage++;
         }
 
         if(profitDetail.size() == 0) {
-            log.info("\n本次统计结果没有投票者");
+            log.info("本次统计结果没有投票者");
             return;
         }
 
-        log.info(profitDetail.toString());
-//        String rawTransactionStr = ELAUtils.generateTransaction(ELAUtils.getUTXOs(profitAccountAddress), profitDetail, profitAccountPrivateKey, profitAccountAddress);
-//        ELAUtils.sendTransaction(rawTransactionStr);
+        try {
+            String rawTransactionStr = ELAUtils.generateTransaction(ELAUtils.getUTXOs(profitAccountAddress), profitDetail, profitAccountPrivateKey, profitAccountAddress);
+            ELAUtils.sendTransaction(rawTransactionStr);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("发送交易异常，下次开始处理的块为 [{}]", startProfitBlock);
+            nextProfitBlock = startProfitBlock;
+        }
     }
 
-    private void doProfit(long currentProfitBlock, long profitValue, Map<String, Long> profitDetail) {
+    private void doProfit(long currentProfitBlock, Map<String, Long> profitDetail) throws Exception {
 
         //这里使用上上上轮最后一个块的排名和投票情况
         long profitDependsBlock = currentProfitBlock - 73;
         long totalVoteNum = 0;
+        long superNodeVoteNum = 0;
 
         //获取特定块的超级节点排名
         String resultRank = HttpKit.get(historyServiceURL +"/api/1/dpos/rank/height/" + profitDependsBlock);
         Type type = new TypeReference<ResultHistory<List<Map<String, String>>>>() {}.getType();
         ResultHistory<List<Map<String, String>>> resultHistory = JSON.parseObject(resultRank, type);
-        
+
         if(resultHistory.getStatus() != 200) {
-            log.error("\n获取块 [{}] 超级节点排名失败", profitDependsBlock);
-            throw new RuntimeException("获取块超级节点排名失败");
+            log.error("获取块 [{}] 超级节点排名失败", profitDependsBlock);
+            throw new Exception("获取块超级节点排名失败");
         }
 
-        //减去节点owner分红
         for(Map<String, String> entry : resultHistory.getResult()) {
+            long voteValue = Double.valueOf(entry.get("Votes")).longValue();
             if(entry.get("Producer_public_key").equals(ownerPublicKey)) {
-                if(Integer.parseInt(entry.get("Rank")) <= 24) {
-                    profitValue -= 43949771;
-                }
-                totalVoteNum = Double.valueOf(entry.get("Votes")).longValue();
-                break;
+                superNodeVoteNum = voteValue;
             }
+            totalVoteNum += voteValue;
         }
 
         //获取特定块超级节点投票详情
@@ -131,17 +144,17 @@ public class ProfitTask {
         ResultHistory<List<Map<String, String>>> resultHistory2 = JSON.parseObject(resultVoteStatics, type2);
 
         if(resultHistory2.getStatus() != 200) {
-            log.error("\n获取块 [{}] 超级节点投票详情失败", profitDependsBlock);
-            throw new RuntimeException("获取块超级节点投票详情失败");
+            log.error("获取块 [{}] 超级节点投票详情失败", profitDependsBlock);
+            throw new Exception("获取块超级节点投票详情失败");
         }
 
-        voterProfitMethod(profitValue, totalVoteNum, resultHistory2.getResult(), profitDetail);
+        voterProfitMethod(superNodeVoteNum, totalVoteNum, resultHistory2.getResult(), profitDetail);
     }
 
-    private void voterProfitMethod(long profitValue, long totalVoteNum, List<Map<String, String>> result, Map<String, Long> profitDetail) {
+    private void voterProfitMethod(long superNodeVoteNum, long totalVoteNum, List<Map<String, String>> result, Map<String, Long> profitDetail) {
 
         totalVoteNum += 360000;
-        long profitValuePerVote = profitValue / totalVoteNum;
+        long profitValuePerVote = new BigDecimal(totalVoterPorfitPerCircle).multiply(new BigDecimal(1000000000)).longValue() / totalVoteNum;
 
         profitDetail.put("EN686pe2r8CT12qQYCfC31i9yCNNrXNHfN", profitValuePerVote * 180000);
 
