@@ -1,0 +1,157 @@
+package org.elastoscarrier.dposprofit;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import org.elastos.util.HttpKit;
+import org.elastoscarrier.dposprofit.Utils.ELAUtils;
+import org.elastoscarrier.dposprofit.entity.History;
+import org.elastoscarrier.dposprofit.entity.HistoryResult;
+import org.elastoscarrier.dposprofit.entity.ResultHistory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Component
+public class ProfitTask {
+    private static final Logger log = LoggerFactory.getLogger(ProfitTask.class);
+
+    private static Long nextProfitBlock;
+    private static Integer nextQueryPage = 1;
+
+    @Value("${common.startProfitBlock}")
+    public void setNextProfitBlock(Long startProfitBlock) {
+        nextProfitBlock = startProfitBlock;
+    }
+
+    @Value("${common.historyServiceURL}")
+    private String historyServiceURL;
+
+    @Value("${common.ownerPublicKey}")
+    private String ownerPublicKey;
+
+    @Value("${common.rewardAddress}")
+    private String rewardAddress;
+
+    @Value("${profit.account.address}")
+    private String profitAccountAddress;
+
+    @Value("${profit.account.privateKey}")
+    private String profitAccountPrivateKey;
+
+
+    @Scheduled(cron = "0 0/5 * * * *")
+    public void profit() {
+
+        long currentPrefitBlock = 0;
+        long nextEndProfitBlock = nextProfitBlock + 20 * 36;
+
+        Map<String, Long> profitDetail = new HashMap<>(1000);
+
+        end:
+        while(true) {
+
+            String result = HttpKit.get(historyServiceURL + "/api/1/history/" + rewardAddress + "?pageSize=20&pageNum=" + nextQueryPage);
+            Type type = new TypeReference<ResultHistory<HistoryResult>>() {}.getType();
+            ResultHistory<HistoryResult> resultHistory = JSON.parseObject(result, type);
+
+            if(resultHistory.getStatus() != 200) {
+                log.warn("\n获取地址 [{}] 历史记录失败", rewardAddress);
+                break;
+            }
+
+            for(History history : resultHistory.getResult().getHistory()) {
+
+                currentPrefitBlock = history.getHeight();
+
+                //如果还没到要分红处理的块 或者 当前块不是CoinBase交易则跳过
+                if(currentPrefitBlock < nextProfitBlock || !history.getTxType().equals("CoinBase")) {
+                    continue;
+                }
+
+                if(currentPrefitBlock >= nextEndProfitBlock) {
+                    nextProfitBlock = currentPrefitBlock;
+                    break end;
+                }
+
+                log.info("\n当前处理的块为 [{}]", currentPrefitBlock);
+
+                //DO profit
+                doProfit(currentPrefitBlock, history.getValue(), profitDetail);
+            }
+            nextQueryPage++;
+        }
+
+        if(profitDetail.size() == 0) {
+            log.info("\n本次统计结果没有投票者");
+            return;
+        }
+
+        log.info(profitDetail.toString());
+//        String rawTransactionStr = ELAUtils.generateTransaction(ELAUtils.getUTXOs(profitAccountAddress), profitDetail, profitAccountPrivateKey, profitAccountAddress);
+//        ELAUtils.sendTransaction(rawTransactionStr);
+    }
+
+    private void doProfit(long currentProfitBlock, long profitValue, Map<String, Long> profitDetail) {
+
+        //这里使用上上上轮最后一个块的排名和投票情况
+        long profitDependsBlock = currentProfitBlock - 73;
+        long totalVoteNum = 0;
+
+        //获取特定块的超级节点排名
+        String resultRank = HttpKit.get(historyServiceURL +"/api/1/dpos/rank/height/" + profitDependsBlock);
+        Type type = new TypeReference<ResultHistory<List<Map<String, String>>>>() {}.getType();
+        ResultHistory<List<Map<String, String>>> resultHistory = JSON.parseObject(resultRank, type);
+        
+        if(resultHistory.getStatus() != 200) {
+            log.error("\n获取块 [{}] 超级节点排名失败", profitDependsBlock);
+            throw new RuntimeException("获取块超级节点排名失败");
+        }
+
+        //减去节点owner分红
+        for(Map<String, String> entry : resultHistory.getResult()) {
+            if(entry.get("Producer_public_key").equals(ownerPublicKey)) {
+                if(Integer.parseInt(entry.get("Rank")) <= 24) {
+                    profitValue -= 43949771;
+                }
+                totalVoteNum = Double.valueOf(entry.get("Votes")).longValue();
+                break;
+            }
+        }
+
+        //获取特定块超级节点投票详情
+        String resultVoteStatics = HttpKit.get(historyServiceURL + "/api/1/dpos/producer/" + ownerPublicKey + "/height/" + profitDependsBlock);
+        Type type2 = new TypeReference<ResultHistory<List<Map<String, String>>>>() {}.getType();
+        ResultHistory<List<Map<String, String>>> resultHistory2 = JSON.parseObject(resultVoteStatics, type2);
+
+        if(resultHistory2.getStatus() != 200) {
+            log.error("\n获取块 [{}] 超级节点投票详情失败", profitDependsBlock);
+            throw new RuntimeException("获取块超级节点投票详情失败");
+        }
+
+        voterProfitMethod(profitValue, totalVoteNum, resultHistory2.getResult(), profitDetail);
+    }
+
+    private void voterProfitMethod(long profitValue, long totalVoteNum, List<Map<String, String>> result, Map<String, Long> profitDetail) {
+
+        totalVoteNum += 360000;
+        long profitValuePerVote = profitValue / totalVoteNum;
+
+        profitDetail.put("EN686pe2r8CT12qQYCfC31i9yCNNrXNHfN", profitValuePerVote * 180000);
+
+        for(Map<String, String> entry : result) {
+            String voteAddress = entry.get("Address");
+            if(profitDetail.containsKey(voteAddress)) {
+                profitDetail.put(voteAddress, profitDetail.get(voteAddress) + Double.valueOf(entry.get("Value")).longValue() * profitValuePerVote);
+            } else {
+                profitDetail.put(voteAddress, Double.valueOf(entry.get("Value")).longValue() * profitValuePerVote);
+            }
+        }
+    }
+}
