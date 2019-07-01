@@ -66,7 +66,7 @@ public class ELAUtils {
             if(entry.getValue() > 0) {
                 Map<String,Object> utxoOutputDetail = new HashMap<>();
                 utxoOutputDetail.put("address", entry.getKey());
-                utxoOutputDetail.put("amount", entry.getValue().toString());
+                utxoOutputDetail.put("amount", entry.getValue());
                 utxoOutputs.add(utxoOutputDetail);
 
                 totalSpend += entry.getValue();
