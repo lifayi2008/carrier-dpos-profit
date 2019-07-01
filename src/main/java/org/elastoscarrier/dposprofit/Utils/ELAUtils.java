@@ -4,9 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import net.sf.json.JSONObject;
 import org.elastos.api.SingleSignTransaction;
-import org.elastos.entity.ReturnMsgEntity;
 import org.elastos.util.HttpKit;
-import org.elastos.util.JsonUtil;
 import org.elastoscarrier.dposprofit.ProfitTask;
 import org.elastoscarrier.dposprofit.entity.ELAJsonRpcRequest;
 import org.elastoscarrier.dposprofit.entity.ELAJsonRpcResponse;
@@ -64,21 +62,23 @@ public class ELAUtils {
 
         List<Map<String, Object>> utxoOutputs = new ArrayList<>();
         for(Map.Entry<String, Long> entry : receivers.entrySet()) {
-            Map<String,Object> utxoOutputDetail = new HashMap<>();
-            utxoOutputDetail.put("address", entry.getKey());
-            utxoOutputDetail.put("amount", entry.getValue());
-            utxoOutputs.add(utxoOutputDetail);
+            if(entry.getValue() > 0) {
+                Map<String,Object> utxoOutputDetail = new HashMap<>();
+                utxoOutputDetail.put("address", entry.getKey());
+                utxoOutputDetail.put("amount", entry.getValue().toString());
+                utxoOutputs.add(utxoOutputDetail);
 
-            totalSpend += entry.getValue();
+                totalSpend += entry.getValue();
+            }
         }
 
         List<Map<String, Object>> utxoInputs = new ArrayList<>();
         for(Map<String, String> entry : utxos) {
             Map<String,Object> utxoInputDetail = new HashMap<>();
             utxoInputDetail.put("txid",  entry.get("Txid"));
-            utxoInputDetail.put("index",  Long.parseLong(entry.get("Index")));
+            utxoInputDetail.put("vout",  Long.parseLong(entry.get("Index")));
             utxoInputDetail.put("privateKey",  privateKey);
-            utxoInputDetail.put("address",  address);
+//            utxoInputDetail.put("address",  address);
             utxoInputs.add(utxoInputDetail);
 
             utxoValue += new BigDecimal(entry.get("Value")).multiply(new BigDecimal(1000000000)).longValue();
