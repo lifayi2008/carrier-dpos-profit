@@ -76,9 +76,8 @@ public class ELAUtils {
         for(Map<String, String> entry : utxos) {
             Map<String,Object> utxoInputDetail = new HashMap<>();
             utxoInputDetail.put("txid",  entry.get("Txid"));
-            utxoInputDetail.put("vout",  Long.parseLong(entry.get("Index")));
+            utxoInputDetail.put("vout",  Long.parseLong(entry.get("vout")));
             utxoInputDetail.put("privateKey",  privateKey);
-//            utxoInputDetail.put("address",  address);
             utxoInputs.add(utxoInputDetail);
 
             utxoValue += new BigDecimal(entry.get("Value")).multiply(new BigDecimal(1000000000)).longValue();
@@ -96,7 +95,7 @@ public class ELAUtils {
         if(leftValue > 0) {
             Map<String,Object> utxoOutputDetail = new HashMap<>();
             utxoOutputDetail.put("address", address);
-            utxoOutputDetail.put("amount", leftValue);
+            utxoOutputDetail.put("amount", leftValue + "");
             utxoOutputs.add(utxoOutputDetail);
         }
 
