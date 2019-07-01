@@ -8,6 +8,7 @@ import org.elastos.entity.ReturnMsgEntity;
 import org.elastos.util.HttpKit;
 import org.elastos.util.JsonUtil;
 import org.elastoscarrier.dposprofit.ProfitTask;
+import org.elastoscarrier.dposprofit.entity.ELAJsonRpcRequest;
 import org.elastoscarrier.dposprofit.entity.ResultUTXO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +31,22 @@ public class ELAUtils {
 
     private final static String secret = resourceBundle.getString("common.nodeAccessSecret");
 
+    private static Map<String, String> JSONRpcRequestHeader = new HashMap<>(2);
+
+    static {
+        JSONRpcRequestHeader.put("Authorization", "Basic " + secret);
+        JSONRpcRequestHeader.put("Content-Type", "application/json");
+    }
+
     public static List<Map<String, String>> getUTXOs(String address) throws Exception {
-        String result = HttpKit.get(nodeURL + "/api/v1/asset/utxos/" + address);
+        Map<String, String[]> requestData = new HashMap<>(1);
+        requestData.put("addresses", new String[] {address});
+
+        ELAJsonRpcRequest<Map<String, String[]>> elaJsonRpcRequest = new ELAJsonRpcRequest<>();
+        elaJsonRpcRequest.setMethod("listunspent");
+        elaJsonRpcRequest.setParams(requestData);
+
+        String result = HttpKit.post(nodeURL, JSON.toJSONString(elaJsonRpcRequest), JSONRpcRequestHeader);
         ResultUTXO resultUTXO = JsonUtil.jsonStr2Entity(result, ResultUTXO.class);
         if(resultUTXO.getError() != 0) {
             log.error("获取地址 [{}] UTXO失败 [{}]", address, resultUTXO.getDesc());
@@ -99,17 +114,14 @@ public class ELAUtils {
     }
 
     public static void sendTransaction(String rawTxData) throws Exception {
-        RawTxEntity rawTxEntity = new RawTxEntity();
-        rawTxEntity.setData(rawTxData);
+        ELAJsonRpcRequest<String[]> elaJsonRpcRequest = new ELAJsonRpcRequest<>();
+        elaJsonRpcRequest.setMethod("listunspent");
+        elaJsonRpcRequest.setParams(new String[] {rawTxData});
 
-        Map<String, String> header = new HashMap<>(2);
-        header.put("Authorization", "Basic " + secret);
-        header.put("Content-Type", "application/json");
-
-        String responseStr = HttpKit.post(nodeURL + "/api/v1/sendrawtransaction",JSON.toJSONString(rawTxEntity), header);
+        String responseStr = HttpKit.post(nodeURL, JSON.toJSONString(elaJsonRpcRequest), JSONRpcRequestHeader);
         ReturnMsgEntity.ELAReturnMsg elaReturnMsg = JsonUtil.jsonStr2Entity(responseStr,ReturnMsgEntity.ELAReturnMsg.class);
         if(elaReturnMsg.getError() != 0) {
-            log.error("Error to send transaction [{}]", rawTxEntity);
+            log.error("Error to send transaction [{}]", elaJsonRpcRequest);
             throw new Exception("发送交易失败");
         }
         log.info("SendRawTransaction Result: {}", elaReturnMsg);
