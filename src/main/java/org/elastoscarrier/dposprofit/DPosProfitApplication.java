@@ -6,10 +6,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-public class DposProfitApplication {
+public class DPosProfitApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(DposProfitApplication.class, args);
+		SpringApplication.run(DPosProfitApplication.class, args);
 	}
 
 }
