@@ -46,9 +46,6 @@ public class ProfitTask {
     @Value("${profit.account.privateKey}")
     private String profitAccountPrivateKey;
 
-    @Value("${profit.totalVoterPorfitPerCircle}")
-    private String totalVoterPorfitPerCircle;
-
 
     @Scheduled(cron = "0 0/2 * * * *")
     public void profit() {
@@ -89,7 +86,7 @@ public class ProfitTask {
 
                 //DO profit
                 try {
-                    doProfit(currentProfitBlock, profitDetail);
+                    doProfit(currentProfitBlock,history.getValue(), profitDetail);
                 } catch (Exception e) {
                     e.printStackTrace();
                     return;
@@ -113,11 +110,10 @@ public class ProfitTask {
         }
     }
 
-    private void doProfit(long currentProfitBlock, Map<String, Long> profitDetail) throws Exception {
+    private void doProfit(long currentProfitBlock,long superNodeProfitValue, Map<String, Long> profitDetail) throws Exception {
 
         //这里使用上上上轮最后一个块的排名和投票情况
         long profitDependsBlock = currentProfitBlock - 73;
-        long totalVoteNum = 0;
         long superNodeVoteNum = 0;
 
         //获取特定块的超级节点排名
@@ -135,7 +131,6 @@ public class ProfitTask {
             if(entry.get("Producer_public_key").equals(ownerPublicKey)) {
                 superNodeVoteNum = voteValue;
             }
-            totalVoteNum += voteValue;
         }
 
         //获取特定块超级节点投票详情
@@ -148,13 +143,13 @@ public class ProfitTask {
             throw new Exception("获取块超级节点投票详情失败");
         }
 
-        voterProfitMethod(superNodeVoteNum, totalVoteNum, resultHistory2.getResult(), profitDetail);
+        voterProfitMethod(superNodeVoteNum, superNodeProfitValue, resultHistory2.getResult(), profitDetail);
     }
 
-    private void voterProfitMethod(long superNodeVoteNum, long totalVoteNum, List<Map<String, String>> result, Map<String, Long> profitDetail) {
+    private void voterProfitMethod(long superNodeVoteNum, long superNodeProfitValue, List<Map<String, String>> result, Map<String, Long> profitDetail) {
 
-        totalVoteNum += 360000;
-        long profitValuePerVote = new BigDecimal(totalVoterPorfitPerCircle).multiply(new BigDecimal(1000000000)).longValue() / totalVoteNum;
+        superNodeVoteNum += 360000;
+        long profitValuePerVote = superNodeProfitValue * 8 / 10 / superNodeVoteNum;
 
         profitDetail.put("EN686pe2r8CT12qQYCfC31i9yCNNrXNHfN", profitValuePerVote * 180000);
 
