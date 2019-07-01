@@ -31,6 +31,9 @@ public class ProfitTask {
         nextProfitBlock = startProfitBlock;
     }
 
+    @Value("${common.profitCircles}")
+    private String profitCircles;
+
     @Value("${common.historyServiceURL}")
     private String historyServiceURL;
 
@@ -51,7 +54,7 @@ public class ProfitTask {
     public void profit() {
 
         long currentProfitBlock = 0;
-        long nextEndProfitBlock = nextProfitBlock + 20 * 36;
+        long nextEndProfitBlock = nextProfitBlock + Long.parseLong(profitCircles) * 36;
         long startProfitBlock = nextProfitBlock;
 
         Map<String, Long> profitDetail = new HashMap<>(1000);
@@ -59,7 +62,7 @@ public class ProfitTask {
         end:
         while(true) {
 
-            String result = HttpKit.get(historyServiceURL + "/api/1/history/" + rewardAddress + "?pageSize=20&pageNum=" + nextQueryPage);
+            String result = HttpKit.get(historyServiceURL + "/api/1/history/" + rewardAddress + "?pageSize=" + profitCircles + "&pageNum=" + nextQueryPage);
             Type type = new TypeReference<ResultHistory<HistoryResult>>() {}.getType();
             ResultHistory<HistoryResult> resultHistory = JSON.parseObject(result, type);
 
@@ -109,6 +112,7 @@ public class ProfitTask {
             e.printStackTrace();
             log.error("发送交易异常，下次开始处理的块为 [{}]", startProfitBlock);
             nextProfitBlock = startProfitBlock;
+            nextQueryPage--;
         }
     }
 

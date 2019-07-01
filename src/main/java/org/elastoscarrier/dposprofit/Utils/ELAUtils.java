@@ -81,7 +81,7 @@ public class ELAUtils {
             utxoInputDetail.put("privateKey",  privateKey);
             utxoInputs.add(utxoInputDetail);
 
-            utxoValue += new BigDecimal(entry.get("amount")).multiply(new BigDecimal(1000000000)).longValue();
+            utxoValue += new BigDecimal(entry.get("amount")).multiply(new BigDecimal(100000000)).longValue();
             if(utxoValue >= totalSpend + fee) {
                 break;
             }
