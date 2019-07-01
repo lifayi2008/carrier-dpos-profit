@@ -17,7 +17,7 @@
         </filter>
         <encoder>
             <pattern>
-                %date{yyyy-MM-dd HH:mm:ss.SSS} %-5level[%thread]%logger{56}.%method:%L -%msg%n
+                %date{yyyy-MM-dd HH:mm:ss.SSS} %-5level[%thread]%logger{56}.%method:%L - %msg%n
             </pattern>
         </encoder>
         <!-- 滚动策略 -->
