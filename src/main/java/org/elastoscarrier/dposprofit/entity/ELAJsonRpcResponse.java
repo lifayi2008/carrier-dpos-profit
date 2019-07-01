@@ -37,4 +37,14 @@ public class ELAJsonRpcResponse<T> {
     public void setResult(T result) {
         this.result = result;
     }
+
+    @Override
+    public String toString() {
+        return "ELAJsonRpcResponse{" +
+                "error='" + error + '\'' +
+                ", id='" + id + '\'' +
+                ", jsonrpc='" + jsonrpc + '\'' +
+                ", result=" + result +
+                '}';
+    }
 }

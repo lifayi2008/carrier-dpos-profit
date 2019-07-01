@@ -1,18 +1,19 @@
 package org.elastoscarrier.dposprofit.Utils;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import net.sf.json.JSONObject;
 import org.elastos.api.SingleSignTransaction;
-import org.elastos.entity.RawTxEntity;
 import org.elastos.entity.ReturnMsgEntity;
 import org.elastos.util.HttpKit;
 import org.elastos.util.JsonUtil;
 import org.elastoscarrier.dposprofit.ProfitTask;
 import org.elastoscarrier.dposprofit.entity.ELAJsonRpcRequest;
-import org.elastoscarrier.dposprofit.entity.ResultUTXO;
+import org.elastoscarrier.dposprofit.entity.ELAJsonRpcResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -47,12 +48,14 @@ public class ELAUtils {
         elaJsonRpcRequest.setParams(requestData);
 
         String result = HttpKit.post(nodeURL, JSON.toJSONString(elaJsonRpcRequest), JSONRpcRequestHeader);
-        ResultUTXO resultUTXO = JsonUtil.jsonStr2Entity(result, ResultUTXO.class);
-        if(resultUTXO.getError() != 0) {
-            log.error("获取地址 [{}] UTXO失败 [{}]", address, resultUTXO.getDesc());
+        Type type = new TypeReference<ELAJsonRpcResponse<List<Map<String, String>>>>() {}.getType();
+        ELAJsonRpcResponse<List<Map<String, String>>> elaJsonRpcResponse = JSON.parseObject(result, type);
+
+        if(elaJsonRpcResponse.getError() != null) {
+            log.error("获取地址 [{}] UTXO失败 [{}]", address, elaJsonRpcResponse);
             throw new Exception("获取UTXO失败");
         }
-        return resultUTXO.getResult().get(0).getUtxo();
+        return elaJsonRpcResponse.getResult();
     }
 
     public static String generateTransaction(List<Map<String, String>> utxos, Map<String, Long> receivers, String privateKey, String address) throws Exception {
@@ -118,12 +121,13 @@ public class ELAUtils {
         elaJsonRpcRequest.setMethod("listunspent");
         elaJsonRpcRequest.setParams(new String[] {rawTxData});
 
-        String responseStr = HttpKit.post(nodeURL, JSON.toJSONString(elaJsonRpcRequest), JSONRpcRequestHeader);
-        ReturnMsgEntity.ELAReturnMsg elaReturnMsg = JsonUtil.jsonStr2Entity(responseStr,ReturnMsgEntity.ELAReturnMsg.class);
-        if(elaReturnMsg.getError() != 0) {
-            log.error("Error to send transaction [{}]", elaJsonRpcRequest);
+        String result = HttpKit.post(nodeURL, JSON.toJSONString(elaJsonRpcRequest), JSONRpcRequestHeader);
+        Type type = new TypeReference<ELAJsonRpcResponse<String>>() {}.getType();
+        ELAJsonRpcResponse<String> elaJsonRpcResponse = JSON.parseObject(result, type);
+        if(elaJsonRpcResponse.getError() != null) {
+            log.error("Error to send transaction [{}]", elaJsonRpcResponse);
             throw new Exception("发送交易失败");
         }
-        log.info("SendRawTransaction Result: {}", elaReturnMsg);
+        log.info("SendRawTransaction Result: {}", elaJsonRpcResponse);
     }
 }
