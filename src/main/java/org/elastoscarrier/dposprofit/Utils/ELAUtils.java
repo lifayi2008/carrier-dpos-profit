@@ -87,6 +87,8 @@ public class ELAUtils {
             }
         }
 
+        log.debug("总输入: [{}]  总输出: [{}]  手续费: [{}]", utxoValue, totalSpend, fee);
+
         if(utxoValue < totalSpend  + fee) {
             log.error("分红账户余额不足");
             throw new Exception("分红账户余额不足");
