@@ -64,7 +64,7 @@ public class ProfitTask {
             ResultHistory<HistoryResult> resultHistory = JSON.parseObject(result, type);
 
             if(resultHistory.getStatus() != 200) {
-                log.warn("\n获取地址 [{}] 历史记录失败", rewardAddress);
+                log.warn("获取地址 [{}] 历史记录失败", rewardAddress);
                 break;
             }
 
