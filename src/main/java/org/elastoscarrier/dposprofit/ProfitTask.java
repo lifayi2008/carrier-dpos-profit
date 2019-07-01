@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import org.elastos.util.HttpKit;
 import org.elastoscarrier.dposprofit.Utils.ELAUtils;
+import org.elastoscarrier.dposprofit.entity.ELAResultGenTx;
 import org.elastoscarrier.dposprofit.entity.History;
 import org.elastoscarrier.dposprofit.entity.HistoryResult;
 import org.elastoscarrier.dposprofit.entity.ResultHistory;
@@ -46,7 +47,7 @@ public class ProfitTask {
     private String profitAccountPrivateKey;
 
 
-    @Scheduled(cron = "0 0/2 * * * *")
+    @Scheduled(cron = "0 0/5 * * * *")
     public void profit() {
 
         long currentProfitBlock = 0;
@@ -101,7 +102,9 @@ public class ProfitTask {
 
         try {
             String rawTransactionStr = ELAUtils.generateTransaction(ELAUtils.getUTXOs(profitAccountAddress), profitDetail, profitAccountPrivateKey, profitAccountAddress);
-            ELAUtils.sendTransaction(rawTransactionStr);
+            ELAResultGenTx elaResultGenTx = JSON.parseObject(rawTransactionStr, ELAResultGenTx.class);
+            ELAUtils.sendTransaction(elaResultGenTx.getResult().get("rawTx"));
+            log.info("本次分红交易Hash [{}]", elaResultGenTx.getResult().get("txHash"));
         } catch (Exception e) {
             e.printStackTrace();
             log.error("发送交易异常，下次开始处理的块为 [{}]", startProfitBlock);

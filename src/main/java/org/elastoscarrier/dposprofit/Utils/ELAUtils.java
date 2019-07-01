@@ -28,6 +28,8 @@ public class ELAUtils {
 
     private final static Long fee = Long.parseLong(resourceBundle.getString("transaction.fee"));
 
+    private final static String secret = resourceBundle.getString("common.nodeAccessSecret");
+
     public static List<Map<String, String>> getUTXOs(String address) throws Exception {
         String result = HttpKit.get(nodeURL + "/api/v1/asset/utxos/" + address);
         ResultUTXO resultUTXO = JsonUtil.jsonStr2Entity(result, ResultUTXO.class);
@@ -99,7 +101,12 @@ public class ELAUtils {
     public static void sendTransaction(String rawTxData) throws Exception {
         RawTxEntity rawTxEntity = new RawTxEntity();
         rawTxEntity.setData(rawTxData);
-        String responseStr = HttpKit.post(nodeURL + "/api/v1/sendtransaction",JSON.toJSONString(rawTxEntity));
+
+        Map<String, String> header = new HashMap<>(2);
+        header.put("Authorization", "Basic " + secret);
+        header.put("Content-Type", "application/json");
+
+        String responseStr = HttpKit.post(nodeURL + "/api/v1/sendrawtransaction",JSON.toJSONString(rawTxEntity), header);
         ReturnMsgEntity.ELAReturnMsg elaReturnMsg = JsonUtil.jsonStr2Entity(responseStr,ReturnMsgEntity.ELAReturnMsg.class);
         if(elaReturnMsg.getError() != 0) {
             log.error("Error to send transaction [{}]", rawTxEntity);
