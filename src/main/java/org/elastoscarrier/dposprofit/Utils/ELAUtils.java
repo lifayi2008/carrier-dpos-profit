@@ -57,6 +57,7 @@ public class ELAUtils {
     }
 
     public static String generateTransaction(List<Map<String, String>> utxos, Map<String, Long> receivers, String privateKey, String address) throws Exception {
+        log.debug("账户可用的UTXO为: {}", utxos);
 
         long totalSpend = 0, utxoValue = 0;
 
@@ -77,7 +78,7 @@ public class ELAUtils {
             Map<String,Object> utxoInputDetail = new HashMap<>();
             utxoInputDetail.put("txid",  entry.get("txid"));
             utxoInputDetail.put("vout",  Long.parseLong(entry.get("vout")));
-            utxoInputDetail.put("privateKey",  privateKey);
+            utxoInputDetail.put("privatekey",  privateKey);
             utxoInputs.add(utxoInputDetail);
 
             utxoValue += new BigDecimal(entry.get("amount")).multiply(new BigDecimal(1000000000)).longValue();
