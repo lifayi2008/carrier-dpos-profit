@@ -118,7 +118,7 @@ public class ELAUtils {
 
     public static void sendTransaction(String rawTxData) throws Exception {
         ELAJsonRpcRequest<String[]> elaJsonRpcRequest = new ELAJsonRpcRequest<>();
-        elaJsonRpcRequest.setMethod("listunspent");
+        elaJsonRpcRequest.setMethod("sendrawtransaction");
         elaJsonRpcRequest.setParams(new String[] {rawTxData});
 
         String result = HttpKit.post(nodeURL, JSON.toJSONString(elaJsonRpcRequest), JSONRpcRequestHeader);
