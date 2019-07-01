@@ -75,12 +75,12 @@ public class ELAUtils {
         List<Map<String, Object>> utxoInputs = new ArrayList<>();
         for(Map<String, String> entry : utxos) {
             Map<String,Object> utxoInputDetail = new HashMap<>();
-            utxoInputDetail.put("txid",  entry.get("Txid"));
+            utxoInputDetail.put("txid",  entry.get("txid"));
             utxoInputDetail.put("vout",  Long.parseLong(entry.get("vout")));
             utxoInputDetail.put("privateKey",  privateKey);
             utxoInputs.add(utxoInputDetail);
 
-            utxoValue += new BigDecimal(entry.get("Value")).multiply(new BigDecimal(1000000000)).longValue();
+            utxoValue += new BigDecimal(entry.get("amount")).multiply(new BigDecimal(1000000000)).longValue();
             if(utxoValue >= totalSpend + fee) {
                 break;
             }
