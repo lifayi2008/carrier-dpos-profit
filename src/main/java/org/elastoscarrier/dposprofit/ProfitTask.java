@@ -158,9 +158,9 @@ public class ProfitTask {
         long profitValuePerVote = (superNodeProfitValue - 1800000) * 8 / 10 / superNodeVoteNum;
 
         //SuperNode Maintainer's address
-        profitDetail.put("EN686pe2r8CT12qQYCfC31i9yCNNrXNHfN", profitValuePerVote * 180000);
+        profitDetail.put("EN686pe2r8CT12qQYCfC31i9yCNNrXNHfN", profitValuePerVote * 180000 * Long.parseLong(profitCircles));
         //SuperNode Owner's address
-        profitDetail.put("ETJtqzZsKuFdxDwGCCyS25PePPKBd64YXi", profitValuePerVote * 180000);
+        profitDetail.put("ETJtqzZsKuFdxDwGCCyS25PePPKBd64YXi", profitValuePerVote * 180000 * Long.parseLong(profitCircles));
 
         for(Map<String, String> entry : result) {
             String voteAddress = entry.get("Address");
