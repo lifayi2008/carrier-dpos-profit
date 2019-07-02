@@ -87,8 +87,8 @@ public class ProfitTask {
                     continue;
                 }
 
+                nextProfitBlock = currentProfitBlock;
                 if(i >= 20) {
-                    nextProfitBlock = currentProfitBlock;
                     log.info("下次开始处理的块为 [{}]", currentProfitBlock);
                     break end;
                 }
