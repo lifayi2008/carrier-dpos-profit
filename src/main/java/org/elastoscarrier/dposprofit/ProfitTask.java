@@ -155,7 +155,7 @@ public class ProfitTask {
     private void voterProfitMethod(long superNodeVoteNum, long superNodeProfitValue, List<Map<String, String>> result, Map<String, Long> profitDetail) {
 
         superNodeVoteNum += 360000;
-        long profitValuePerVote = superNodeProfitValue * 8 / 10 / superNodeVoteNum;
+        long profitValuePerVote = (superNodeProfitValue - 1800000) * 8 / 10 / superNodeVoteNum;
 
         //SuperNode Maintainer's address
         profitDetail.put("EN686pe2r8CT12qQYCfC31i9yCNNrXNHfN", profitValuePerVote * 180000);
