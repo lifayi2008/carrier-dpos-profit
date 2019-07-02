@@ -33,7 +33,7 @@ public class ProfitTask {
     }
 
     @Value("${common.profitCircles}")
-    private String profitCircles;
+    private Integer profitCircles;
 
     @Value("${common.historyServiceURL}")
     private String historyServiceURL;
@@ -87,8 +87,8 @@ public class ProfitTask {
                     continue;
                 }
 
-                nextProfitBlock = currentProfitBlock;
-                if(i >= 20) {
+                if(i >= profitCircles) {
+                    nextProfitBlock = currentProfitBlock;
                     log.info("下次开始处理的块为 [{}]", currentProfitBlock);
                     break end;
                 }
@@ -105,14 +105,10 @@ public class ProfitTask {
                 }
                 i++;
             }
-            if(resultHistory.getResult().getHistory().size() == Integer.parseInt(profitCircles)) {
+            if(resultHistory.getResult().getHistory().size() == profitCircles) {
                 nextQueryPage++;
             } else {
-                try {
-                    Thread.sleep(1000L * 60);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                log.info("当前未处理的块不足 [{}] 下次开始处理的块为 [{}]", profitCircles, nextProfitBlock);
             }
         }
 
