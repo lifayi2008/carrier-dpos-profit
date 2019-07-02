@@ -25,7 +25,7 @@ public class ProfitTask {
     private static final Logger log = LoggerFactory.getLogger(ProfitTask.class);
 
     private static Long nextProfitBlock;
-    private static Integer nextQueryPage = 1;
+    private static Long nextQueryPage = 1L;
 
     @Value("${common.startProfitBlock}")
     public void setNextProfitBlock(Long startProfitBlock) {
@@ -51,12 +51,14 @@ public class ProfitTask {
     private String profitAccountPrivateKey;
 
 
-    @Scheduled(cron = "0 0 0/1 * * *")
+    @Scheduled(cron = "0 0/5 * * * *")
     public void profit() {
 
-        long currentProfitBlock = 0;
-        long nextEndProfitBlock = nextProfitBlock + Long.parseLong(profitCircles) * 36;
-        long startProfitBlock = nextProfitBlock;
+//        long currentProfitBlock = 0;
+//        long nextEndProfitBlock = nextProfitBlock + Long.parseLong(profitCircles) * 36;
+        long thisTimeStartProfitBlock = nextProfitBlock;
+        long thisTimeStartQueryPage = nextQueryPage;
+        int i = 0;
 
         Map<String, Long> profitDetail = new HashMap<>(1000);
 
@@ -78,15 +80,16 @@ public class ProfitTask {
 
             for(History history : resultHistory.getResult().getHistory()) {
 
-                currentProfitBlock = history.getHeight();
+                long currentProfitBlock = history.getHeight();
 
                 //如果还没到要分红处理的块 或者 当前块不是CoinBase交易则跳过
                 if(currentProfitBlock < nextProfitBlock || !history.getTxType().equals("CoinBase")) {
                     continue;
                 }
 
-                if(currentProfitBlock >= nextEndProfitBlock) {
+                if(i >= 20) {
                     nextProfitBlock = currentProfitBlock;
+                    log.info("下次开始处理的块为 [{}]", currentProfitBlock);
                     break end;
                 }
 
@@ -100,8 +103,17 @@ public class ProfitTask {
                     e.printStackTrace();
                     return;
                 }
+                i++;
             }
-            nextQueryPage++;
+            if(resultHistory.getResult().getHistory().size() == Integer.parseInt(profitCircles)) {
+                nextQueryPage++;
+            } else {
+                try {
+                    Thread.sleep(1000L * 60);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         if(profitDetail.size() == 0) {
@@ -110,14 +122,14 @@ public class ProfitTask {
         }
 
         try {
-            String rawTransactionStr = ELAUtils.generateTransaction(ELAUtils.getUTXOs(profitAccountAddress), profitDetail, profitAccountPrivateKey, profitAccountAddress);
-            ELAResultGenTx elaResultGenTx = JSON.parseObject(rawTransactionStr, ELAResultGenTx.class);
-            ELAUtils.sendTransaction(elaResultGenTx.getResult().get("rawTx"));
+//            String rawTransactionStr = ELAUtils.generateTransaction(ELAUtils.getUTXOs(profitAccountAddress), profitDetail, profitAccountPrivateKey, profitAccountAddress);
+//            ELAResultGenTx elaResultGenTx = JSON.parseObject(rawTransactionStr, ELAResultGenTx.class);
+//            ELAUtils.sendTransaction(elaResultGenTx.getResult().get("rawTx"));
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("发送交易异常，下次开始处理的块为 [{}]", startProfitBlock);
-            nextProfitBlock = startProfitBlock;
-            nextQueryPage--;
+            log.error("发送交易异常，下次开始处理的块为 [{}]", thisTimeStartProfitBlock);
+            nextProfitBlock = thisTimeStartProfitBlock;
+            nextQueryPage = thisTimeStartQueryPage;
         }
     }
 
