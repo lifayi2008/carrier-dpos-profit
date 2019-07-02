@@ -62,8 +62,6 @@ public class ELAUtils {
 
         Map<String, Long> sortedReceivers = Utils.sortMapByValue(receivers);
 
-        log.info(JSON.toJSONString(sortedReceivers));
-
         List<Map<String, Object>> utxoOutputs = new ArrayList<>();
         for(Map.Entry<String, Long> entry : sortedReceivers.entrySet()) {
             if(entry.getValue() > 0) {
