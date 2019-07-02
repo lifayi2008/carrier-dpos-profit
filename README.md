@@ -54,5 +54,5 @@ Elastos Carrier SuperNode DPos profit tool
 
 ## 注意事项
 
-* 如果因维护或者运行异常导致程序停止，则需要手动更改 `startProfitBlock` 参数为已成功处理块之后的 `36` 个块  
+* 如果因维护或者运行异常导致程序停止，则需要手动更改 `startProfitBlock` 参数为日志中最后显示的最后一个 `下次开始处理的块`
 * 一定不要同时运行多个程序实例，否则你可能会发双倍的奖励给投票者
