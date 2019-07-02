@@ -109,6 +109,7 @@ public class ProfitTask {
                 nextQueryPage++;
             } else {
                 log.info("当前未处理的块不足 [{}] 下次开始处理的块为 [{}]", profitCircles, nextProfitBlock);
+                return;
             }
         }
 
