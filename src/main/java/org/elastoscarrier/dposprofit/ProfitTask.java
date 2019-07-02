@@ -118,7 +118,7 @@ public class ProfitTask {
 
     private void doProfit(long currentProfitBlock,long superNodeProfitValue, Map<String, Long> profitDetail) throws Exception {
 
-        //这里使用上上上轮最后一个块的排名和投票情况
+        //使用上上上轮最后一个块的排名和投票情况
         long profitDependsBlock = currentProfitBlock - 73;
         long superNodeVoteNum = 0;
 
@@ -157,7 +157,10 @@ public class ProfitTask {
         superNodeVoteNum += 360000;
         long profitValuePerVote = superNodeProfitValue * 8 / 10 / superNodeVoteNum;
 
+        //SuperNode Maintainer's address
         profitDetail.put("EN686pe2r8CT12qQYCfC31i9yCNNrXNHfN", profitValuePerVote * 180000);
+        //SuperNode Owner's address
+        profitDetail.put("ETJtqzZsKuFdxDwGCCyS25PePPKBd64YXi", profitValuePerVote * 180000);
 
         for(Map<String, String> entry : result) {
             String voteAddress = entry.get("Address");

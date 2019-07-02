@@ -100,8 +100,6 @@ public class ELAUtils {
             utxoOutputs.add(utxoOutputDetail);
         }
 
-        log.debug("总输入: [{}]  总输出: [{}]  手续费: [{}]  剩余: [{}]", utxoValue, totalSpend, fee, leftValue);
-
         Map<String,Object> txListMap = new HashMap<>();
         txListMap.put("Memo", memo);
         txListMap.put("UTXOInputs", utxoInputs);
