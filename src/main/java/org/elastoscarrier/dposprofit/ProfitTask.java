@@ -3,6 +3,7 @@ package org.elastoscarrier.dposprofit;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import org.elastos.util.HttpKit;
+import org.elastoscarrier.dposprofit.Utils.Constants;
 import org.elastoscarrier.dposprofit.Utils.ELAUtils;
 import org.elastoscarrier.dposprofit.entity.ELAResultGenTx;
 import org.elastoscarrier.dposprofit.entity.History;
@@ -59,6 +60,9 @@ public class ProfitTask {
 
         Map<String, Long> profitDetail = new HashMap<>(1000);
 
+        profitDetail.put(Constants.MAINTAINER_ADDRESS, 0L);
+        profitDetail.put(Constants.OWNER_ADDRESS, 0L);
+
         end:
         while(true) {
 
@@ -70,6 +74,7 @@ public class ProfitTask {
                 log.warn("获取地址 [{}] 历史记录失败", rewardAddress);
                 break;
             }
+            log.debug("节点收益地址历史记录: {}", resultHistory.getResult().getHistory());
 
             for(History history : resultHistory.getResult().getHistory()) {
 
@@ -86,6 +91,7 @@ public class ProfitTask {
                 }
 
                 log.info("当前处理的块为 [{}]", currentProfitBlock);
+                log.debug("超级节点从高度为 [{}] 的块中获取投票总奖励为: {}", currentProfitBlock, history.getValue());
 
                 //DO profit
                 try {
@@ -116,7 +122,6 @@ public class ProfitTask {
     }
 
     private void doProfit(long currentProfitBlock,long superNodeProfitValue, Map<String, Long> profitDetail) throws Exception {
-
         //使用上上上轮最后一个块的排名和投票情况
         long profitDependsBlock = currentProfitBlock - 73;
         long superNodeVoteNum = 0;
@@ -130,6 +135,7 @@ public class ProfitTask {
             log.error("获取块 [{}] 超级节点排名失败", profitDependsBlock);
             throw new Exception("获取块超级节点排名失败");
         }
+        log.debug("超级节点在高度 [{}] 的排名: {}", profitDependsBlock, resultHistory.getResult());
 
         for(Map<String, String> entry : resultHistory.getResult()) {
             long voteValue = Double.valueOf(entry.get("Votes")).longValue();
@@ -137,6 +143,7 @@ public class ProfitTask {
                 superNodeVoteNum = voteValue;
             }
         }
+        log.debug("超级节点在高度 [{}] 获得的总投票: {}", profitDependsBlock, superNodeVoteNum);
 
         //获取特定块超级节点投票详情
         String resultVoteStatics = HttpKit.get(historyServiceURL + "/api/1/dpos/producer/" + ownerPublicKey + "/height/" + profitDependsBlock);
@@ -147,6 +154,7 @@ public class ProfitTask {
             log.error("获取块 [{}] 超级节点投票详情失败", profitDependsBlock);
             throw new Exception("获取块超级节点投票详情失败");
         }
+        log.debug("超级节点在高度 [{}] 获得的投票详情: {}",profitDependsBlock, resultHistory2.getResult());
 
         voterProfitMethod(superNodeVoteNum, superNodeProfitValue, resultHistory2.getResult(), profitDetail);
     }
@@ -155,11 +163,13 @@ public class ProfitTask {
 
         superNodeVoteNum += 360000;
         long profitValuePerVote = (superNodeProfitValue - 1800000) * 8 / 10 / superNodeVoteNum;
+        long reservedValue = profitValuePerVote * 180000;
 
-        //SuperNode Maintainer's address
-        profitDetail.put("EN686pe2r8CT12qQYCfC31i9yCNNrXNHfN", profitValuePerVote * 180000 * Long.parseLong(profitCircles));
-        //SuperNode Owner's address
-        profitDetail.put("ETJtqzZsKuFdxDwGCCyS25PePPKBd64YXi", profitValuePerVote * 180000 * Long.parseLong(profitCircles));
+        log.debug("本次计算扣除成本之后每票可得奖励为: {}", profitValuePerVote);
+        log.debug("节点所有者和维护者各自获取的奖励为: {}", reservedValue);
+
+        profitDetail.put(Constants.MAINTAINER_ADDRESS, profitDetail.get(Constants.MAINTAINER_ADDRESS) + reservedValue);
+        profitDetail.put(Constants.OWNER_ADDRESS, profitDetail.get(Constants.OWNER_ADDRESS) + reservedValue);
 
         for(Map<String, String> entry : result) {
             String voteAddress = entry.get("Address");

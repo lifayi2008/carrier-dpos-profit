@@ -53,6 +53,7 @@ public class ELAUtils {
             log.error("获取地址 [{}] UTXO失败 [{}]", address, elaJsonRpcResponse);
             throw new Exception("获取UTXO失败");
         }
+        log.debug("分红地址 [{}] 可用UTXO: {}", address, elaJsonRpcResponse.getResult());
         return elaJsonRpcResponse.getResult();
     }
 
@@ -109,6 +110,8 @@ public class ELAUtils {
         Map<String,Object> paraListMap = new HashMap<>();
         paraListMap.put("Transactions", txList);
 
+        log.debug("生成交易数据: {}", paraListMap);
+
         JSONObject jsonObject = new JSONObject();
         jsonObject.accumulateAll(paraListMap);
         return SingleSignTransaction.genRawTransaction(jsonObject);
@@ -123,9 +126,10 @@ public class ELAUtils {
         Type type = new TypeReference<ELAJsonRpcResponse<String>>() {}.getType();
         ELAJsonRpcResponse<String> elaJsonRpcResponse = JSON.parseObject(result, type);
         if(elaJsonRpcResponse.getError() != null) {
-            log.error("Error to send transaction [{}]", elaJsonRpcResponse);
+            log.error("发送交易失败 [{}]", elaJsonRpcResponse);
             throw new Exception("发送交易失败");
         }
-        log.info("SendRawTransaction Result: {}", elaJsonRpcResponse);
+        log.debug("分红交易发送成功: {}", elaJsonRpcResponse);
+        log.info("分红交易Hash: {}", elaJsonRpcResponse.getResult());
     }
 }

@@ -103,4 +103,21 @@ public class History {
     public void setMemo(String memo) {
         Memo = memo;
     }
+
+    @Override
+    public String toString() {
+        return "History{" +
+                "Txid='" + Txid + '\'' +
+                ", Type='" + Type + '\'' +
+                ", Value=" + Value +
+                ", CreateTime=" + CreateTime +
+                ", Height=" + Height +
+                ", Inputs=" + Inputs +
+                ", Outputs=" + Outputs +
+                ", TxType='" + TxType + '\'' +
+                ", Address='" + Address + '\'' +
+                ", Fee=" + Fee +
+                ", Memo='" + Memo + '\'' +
+                '}';
+    }
 }
