@@ -51,7 +51,7 @@ public class ProfitTask {
     private String profitAccountPrivateKey;
 
 
-    @Scheduled(cron = "0 0 0/1 * * *")
+    @Scheduled(cron = "0 0/5 * * * *")
     public void profit() {
 
         long thisTimeStartProfitBlock = nextProfitBlock;
@@ -116,9 +116,10 @@ public class ProfitTask {
         }
 
         try {
-            String rawTransactionStr = ELAUtils.generateTransaction(ELAUtils.getUTXOs(profitAccountAddress), profitDetail, profitAccountPrivateKey, profitAccountAddress);
-            ELAResultGenTx elaResultGenTx = JSON.parseObject(rawTransactionStr, ELAResultGenTx.class);
-            ELAUtils.sendTransaction(elaResultGenTx.getResult().get("rawTx"));
+//            String rawTransactionStr = ELAUtils.generateTransaction(ELAUtils.getUTXOs(profitAccountAddress), profitDetail, profitAccountPrivateKey, profitAccountAddress);
+//            ELAResultGenTx elaResultGenTx = JSON.parseObject(rawTransactionStr, ELAResultGenTx.class);
+//            ELAUtils.sendTransaction(elaResultGenTx.getResult().get("rawTx"));
+            log.info("============ send transaction ========================");
         } catch (Exception e) {
             e.printStackTrace();
             log.error("发送交易异常，下次开始处理的块为 [{}]", thisTimeStartProfitBlock);
