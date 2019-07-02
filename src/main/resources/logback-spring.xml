@@ -23,7 +23,8 @@
         <!-- 滚动策略 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- 路径 -->
-            <fileNamePattern>dpos-profit/log/dpos-profit.info.%d.log</fileNamePattern>
+            <fileNamePattern>dpos-profit/log/debug.%d.log</fileNamePattern>
+            <MaxHistory>12</MaxHistory>
         </rollingPolicy>
     </appender>
 
@@ -40,18 +41,17 @@
         <!-- 设置滚动策略 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- 路径 -->
-            <fileNamePattern>dpos-profit/log/depos-profit.err.%d.log</fileNamePattern>
+            <fileNamePattern>dpos-profit/log/error.%d.log</fileNamePattern>
 
-            <!-- 控制保留的归档文件的最大数量，超出数量就删除旧文件，假设设置每个月滚动，
-            且<maxHistory> 是1，则只保存最近1个月的文件，删除之前的旧文件 -->
-            <MaxHistory>1</MaxHistory>
-
+            <!-- 控制保留的归档文件的最大数量，超出数量就删除旧文件，假设设置每个月滚动，且<maxHistory> 是1，则只保存最近1个月的文件，删除之前的旧文件 -->
+            <MaxHistory>12</MaxHistory>
         </rollingPolicy>
     </appender>
 
     <logger name="org.springframework.web" level="INFO"/>
     <logger name="org.springboot.sample" level="INFO" />
     <logger name="org.elastoscarrier.dposprofit" level="DEBUG" />
+    <logger name="org.elastos.api" level="ERROR" />
 
     <root level="INFO">
         <appender-ref ref="consoleApp"/>
