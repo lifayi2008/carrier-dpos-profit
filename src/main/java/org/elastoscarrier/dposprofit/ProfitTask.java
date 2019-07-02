@@ -74,7 +74,7 @@ public class ProfitTask {
                 log.warn("获取地址 [{}] 历史记录失败", rewardAddress);
                 break;
             }
-            log.debug("节点收益地址历史记录: {}", resultHistory.getResult().getHistory());
+//            log.debug("节点收益地址历史记录: {}", resultHistory.getResult().getHistory());
 
             for(History history : resultHistory.getResult().getHistory()) {
 
@@ -135,7 +135,7 @@ public class ProfitTask {
             log.error("获取块 [{}] 超级节点排名失败", profitDependsBlock);
             throw new Exception("获取块超级节点排名失败");
         }
-        log.debug("超级节点在高度 [{}] 的排名: {}", profitDependsBlock, resultHistory.getResult());
+//        log.debug("超级节点在高度 [{}] 的排名: {}", profitDependsBlock, resultHistory.getResult());
 
         for(Map<String, String> entry : resultHistory.getResult()) {
             long voteValue = Double.valueOf(entry.get("Votes")).longValue();
@@ -154,7 +154,7 @@ public class ProfitTask {
             log.error("获取块 [{}] 超级节点投票详情失败", profitDependsBlock);
             throw new Exception("获取块超级节点投票详情失败");
         }
-        log.debug("超级节点在高度 [{}] 获得的投票详情: {}",profitDependsBlock, resultHistory2.getResult());
+//        log.debug("超级节点在高度 [{}] 获得的投票详情: {}",profitDependsBlock, resultHistory2.getResult());
 
         voterProfitMethod(superNodeVoteNum, superNodeProfitValue, resultHistory2.getResult(), profitDetail);
     }
@@ -164,9 +164,6 @@ public class ProfitTask {
         superNodeVoteNum += 360000;
         long profitValuePerVote = (superNodeProfitValue - 1800000) * 8 / 10 / superNodeVoteNum;
         long reservedValue = profitValuePerVote * 180000;
-
-        log.debug("本次计算扣除成本之后每票可得奖励为: {}", profitValuePerVote);
-        log.debug("节点所有者和维护者各自获取的奖励为: {}", reservedValue);
 
         profitDetail.put(Constants.MAINTAINER_ADDRESS, profitDetail.get(Constants.MAINTAINER_ADDRESS) + reservedValue);
         profitDetail.put(Constants.OWNER_ADDRESS, profitDetail.get(Constants.OWNER_ADDRESS) + reservedValue);
