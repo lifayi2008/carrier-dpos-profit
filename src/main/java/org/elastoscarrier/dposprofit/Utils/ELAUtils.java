@@ -60,8 +60,10 @@ public class ELAUtils {
     public static String generateTransaction(List<Map<String, String>> utxos, Map<String, Long> receivers, String privateKey, String address) throws Exception {
         long totalSpend = 0, utxoValue = 0;
 
+        Map<String, Long> sortedReceivers = Utils.sortMapByValue(receivers);
+
         List<Map<String, Object>> utxoOutputs = new ArrayList<>();
-        for(Map.Entry<String, Long> entry : receivers.entrySet()) {
+        for(Map.Entry<String, Long> entry : sortedReceivers.entrySet()) {
             if(entry.getValue() > 0) {
                 Map<String,Object> utxoOutputDetail = new HashMap<>();
                 utxoOutputDetail.put("address", entry.getKey());

@@ -16,7 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Type;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,13 +54,11 @@ public class ProfitTask {
     @Scheduled(cron = "0 0/5 * * * *")
     public void profit() {
 
-//        long currentProfitBlock = 0;
-//        long nextEndProfitBlock = nextProfitBlock + Long.parseLong(profitCircles) * 36;
         long thisTimeStartProfitBlock = nextProfitBlock;
         long thisTimeStartQueryPage = nextQueryPage;
         int i = 0;
 
-        Map<String, Long> profitDetail = new HashMap<>(1000);
+        Map<String, Long> profitDetail = new LinkedHashMap<>(1000);
 
         profitDetail.put(Constants.MAINTAINER_ADDRESS, 0L);
         profitDetail.put(Constants.OWNER_ADDRESS, 0L);
@@ -76,7 +74,6 @@ public class ProfitTask {
                 log.warn("获取地址 [{}] 历史记录失败", rewardAddress);
                 break;
             }
-//            log.debug("节点收益地址历史记录: {}", resultHistory.getResult().getHistory());
 
             for(History history : resultHistory.getResult().getHistory()) {
 
@@ -122,7 +119,6 @@ public class ProfitTask {
 //            String rawTransactionStr = ELAUtils.generateTransaction(ELAUtils.getUTXOs(profitAccountAddress), profitDetail, profitAccountPrivateKey, profitAccountAddress);
 //            ELAResultGenTx elaResultGenTx = JSON.parseObject(rawTransactionStr, ELAResultGenTx.class);
 //            ELAUtils.sendTransaction(elaResultGenTx.getResult().get("rawTx"));
-            log.info("=============== send rewards ===================");
         } catch (Exception e) {
             e.printStackTrace();
             log.error("发送交易异常，下次开始处理的块为 [{}]", thisTimeStartProfitBlock);
@@ -145,7 +141,6 @@ public class ProfitTask {
             log.error("获取块 [{}] 超级节点排名失败", profitDependsBlock);
             throw new Exception("获取块超级节点排名失败");
         }
-//        log.debug("超级节点在高度 [{}] 的排名: {}", profitDependsBlock, resultHistory.getResult());
 
         for(Map<String, String> entry : resultHistory.getResult()) {
             long voteValue = Double.valueOf(entry.get("Votes")).longValue();
@@ -164,7 +159,6 @@ public class ProfitTask {
             log.error("获取块 [{}] 超级节点投票详情失败", profitDependsBlock);
             throw new Exception("获取块超级节点投票详情失败");
         }
-//        log.debug("超级节点在高度 [{}] 获得的投票详情: {}",profitDependsBlock, resultHistory2.getResult());
 
         voterProfitMethod(superNodeVoteNum, superNodeProfitValue, resultHistory2.getResult(), profitDetail);
     }
