@@ -57,8 +57,6 @@ public class ELAUtils {
     }
 
     public static String generateTransaction(List<Map<String, String>> utxos, Map<String, Long> receivers, String privateKey, String address) throws Exception {
-        log.debug("账户可用的UTXO为: {}", utxos);
-
         long totalSpend = 0, utxoValue = 0;
 
         List<Map<String, Object>> utxoOutputs = new ArrayList<>();
