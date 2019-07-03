@@ -52,6 +52,28 @@ Elastos Carrier SuperNode DPos profit tool
 }
 ```
 
+## 启动应用
+
+工具需要依赖 `Java` 编译运行环境及 `Maven` 打包工具
+
+```bash
+git clone https://github.com/lifayi2008/carrier-dpos-profit.git
+
+cd carrier-dpos-profit
+
+按需求更改配置文件
+
+mvn clean package
+
+mv target/dpos-profit-0.0.1-SNAPSHOT.jar ~
+
+cd ~
+
+nohup java -jar dpos-profit-0.0.1-SNAPSHOT.jar > /dev/null 2> error &
+
+tail -f dpos-profit/logs/info*.log
+```
+
 ## 注意事项
 
 * 一定不要同时运行多个程序实例，否则你可能会发双倍的奖励给投票者
