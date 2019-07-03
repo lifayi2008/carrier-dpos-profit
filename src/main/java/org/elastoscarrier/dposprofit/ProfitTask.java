@@ -86,7 +86,6 @@ public class ProfitTask {
 
                 if(i >= profitCircles) {
                     nextProfitBlock = currentProfitBlock;
-                    log.info("下次开始处理的块为 [{}]", currentProfitBlock);
                     break end;
                 }
 
@@ -119,6 +118,7 @@ public class ProfitTask {
             String rawTransactionStr = ELAUtils.generateTransaction(ELAUtils.getUTXOs(profitAccountAddress), profitDetail, profitAccountPrivateKey, profitAccountAddress);
             ELAResultGenTx elaResultGenTx = JSON.parseObject(rawTransactionStr, ELAResultGenTx.class);
             ELAUtils.sendTransaction(elaResultGenTx.getResult().get("rawTx"));
+            log.info("下次开始处理的块为 [{}]", nextProfitBlock);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("发送交易异常，下次开始处理的块为 [{}]", thisTimeStartProfitBlock);
