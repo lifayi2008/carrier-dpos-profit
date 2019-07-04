@@ -51,7 +51,7 @@ public class ProfitTask {
     private String profitAccountPrivateKey;
 
 
-    @Scheduled(cron = "0 0 0/1 * * *")
+    @Scheduled(cron = "0 0 0/2 * * *")
     public void profit() {
 
         long thisTimeStartProfitBlock = nextProfitBlock;
@@ -105,6 +105,7 @@ public class ProfitTask {
                 nextQueryPage++;
             } else {
                 log.info("当前未处理的块不足 [{}] 下次开始处理的块为 [{}]", profitCircles, nextProfitBlock);
+                nextQueryPage = thisTimeStartQueryPage;
                 return;
             }
         }
