@@ -172,8 +172,8 @@ public class ProfitTask {
 
         profitDetail.put(Constants.MAINTAINER_ADDRESS, profitDetail.get(Constants.MAINTAINER_ADDRESS) + reservedValue);
         profitDetail.put(Constants.OWNER_ADDRESS, profitDetail.get(Constants.OWNER_ADDRESS) + reservedValue / 5 * 3);
-        profitDetail.put("EYvuucWJb1v2bzh42iJog5Gn57z1zHnzLG", profitDetail.get(Constants.OWNER_ADDRESS) + reservedValue / 5);
-        profitDetail.put("EQLp9LCrhxKwPEgfySzEGsFL4Sf4Vyj2GV", profitDetail.get(Constants.OWNER_ADDRESS) + reservedValue / 5);
+        profitDetail.put("EYvuucWJb1v2bzh42iJog5Gn57z1zHnzLG", profitDetail.get("EYvuucWJb1v2bzh42iJog5Gn57z1zHnzLG") + reservedValue / 5);
+        profitDetail.put("EQLp9LCrhxKwPEgfySzEGsFL4Sf4Vyj2GV", profitDetail.get("EQLp9LCrhxKwPEgfySzEGsFL4Sf4Vyj2GV") + reservedValue / 5);
 
         for(Map<String, String> entry : result) {
             String voteAddress = entry.get("Address");
