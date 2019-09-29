@@ -62,6 +62,8 @@ public class ProfitTask {
 
         profitDetail.put(Constants.MAINTAINER_ADDRESS, 0L);
         profitDetail.put(Constants.OWNER_ADDRESS, 0L);
+        profitDetail.put("EYvuucWJb1v2bzh42iJog5Gn57z1zHnzLG", 0L);
+        profitDetail.put("EQLp9LCrhxKwPEgfySzEGsFL4Sf4Vyj2GV", 0L);
 
         end:
         while(true) {
