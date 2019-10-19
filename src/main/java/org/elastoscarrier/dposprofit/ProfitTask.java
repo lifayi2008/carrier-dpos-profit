@@ -68,7 +68,7 @@ public class ProfitTask {
         end:
         while(true) {
 
-            String result = HttpKit.get(historyServiceURL + "/api/1/history/" + rewardAddress + "?pageSize=" + profitCircles + "&pageNum=" + nextQueryPage);
+            String result = HttpKit.get("https://api-wallet-ela.elastos.org/api/1/history/" + rewardAddress + "?pageSize=" + profitCircles + "&pageNum=" + nextQueryPage);
             Type type = new TypeReference<ResultHistory<HistoryResult>>() {}.getType();
             ResultHistory<HistoryResult> resultHistory = JSON.parseObject(result, type);
 
@@ -136,7 +136,7 @@ public class ProfitTask {
         long superNodeVoteNum = 0;
 
         //获取特定块的超级节点排名
-        String resultRank = HttpKit.get(historyServiceURL +"/api/1/dpos/rank/height/" + profitDependsBlock);
+        String resultRank = HttpKit.get("https://api-wallet-ela.elastos.org/api/1/dpos/rank/height/" + profitDependsBlock);
         Type type = new TypeReference<ResultHistory<List<Map<String, String>>>>() {}.getType();
         ResultHistory<List<Map<String, String>>> resultHistory = JSON.parseObject(resultRank, type);
 
