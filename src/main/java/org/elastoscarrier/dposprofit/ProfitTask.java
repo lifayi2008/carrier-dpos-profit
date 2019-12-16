@@ -67,7 +67,11 @@ public class ProfitTask {
 
         end:
         while(true) {
-
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             String result = HttpKit.get("https://api-wallet-ela.elastos.org/api/1/history/" + rewardAddress + "?pageSize=" + profitCircles + "&pageNum=" + nextQueryPage);
             Type type = new TypeReference<ResultHistory<HistoryResult>>() {}.getType();
             ResultHistory<HistoryResult> resultHistory = JSON.parseObject(result, type);
