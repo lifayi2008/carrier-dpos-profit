@@ -154,7 +154,7 @@ public class ProfitTask {
         log.debug("超级节点在高度 [{}] 获得的总投票: {}", profitDependsBlock, superNodeVoteNum);
 
         //获取特定块超级节点投票详情
-        String resultVoteStatics = HttpKit.get(historyServiceURL + "/api/1/dpos/producer/" + ownerPublicKey + "/height/" + profitDependsBlock);
+        String resultVoteStatics = HttpKit.get("https://api-wallet-ela.elastos.org/api/1/dpos/producer/" + ownerPublicKey + "/" + profitDependsBlock);
         Type type2 = new TypeReference<ResultHistory<List<Map<String, String>>>>() {}.getType();
         ResultHistory<List<Map<String, String>>> resultHistory2 = JSON.parseObject(resultVoteStatics, type2);
 
