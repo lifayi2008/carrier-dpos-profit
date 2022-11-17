@@ -72,7 +72,7 @@ public class ProfitTask {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            String result = HttpKit.get("https://api-wallet-ela.elastos.org/api/1/history/" + rewardAddress + "?pageSize=" + profitCircles + "&pageNum=" + nextQueryPage);
+            String result = HttpKit.get("https://history.yoopig.com/api/1/history/" + rewardAddress + "?pageSize=" + profitCircles + "&pageNum=" + nextQueryPage);
             Type type = new TypeReference<ResultHistory<HistoryResult>>() {}.getType();
             ResultHistory<HistoryResult> resultHistory = JSON.parseObject(result, type);
 
@@ -140,7 +140,7 @@ public class ProfitTask {
         long superNodeVoteNum = 0;
 
         //获取特定块的超级节点排名
-        String resultRank = HttpKit.get("https://api-wallet-ela.elastos.org/api/1/dpos/rank/height/" + profitDependsBlock);
+        String resultRank = HttpKit.get("https://history.yoopig.com/api/1/dpos/rank/height/" + profitDependsBlock);
         Type type = new TypeReference<ResultHistory<List<Map<String, String>>>>() {}.getType();
         ResultHistory<List<Map<String, String>>> resultHistory = JSON.parseObject(resultRank, type);
 
@@ -158,7 +158,7 @@ public class ProfitTask {
         log.debug("超级节点在高度 [{}] 获得的总投票: {}", profitDependsBlock, superNodeVoteNum);
 
         //获取特定块超级节点投票详情
-        String resultVoteStatics = HttpKit.get("https://api-wallet-ela.elastos.org/api/1/dpos/producer/" + ownerPublicKey + "/" + profitDependsBlock);
+        String resultVoteStatics = HttpKit.get("https://history.yoopig.com/api/1/dpos/producer/" + ownerPublicKey + "/" + profitDependsBlock);
         Type type2 = new TypeReference<ResultHistory<List<Map<String, String>>>>() {}.getType();
         ResultHistory<List<Map<String, String>>> resultHistory2 = JSON.parseObject(resultVoteStatics, type2);
 
